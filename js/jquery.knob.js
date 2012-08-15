@@ -103,12 +103,13 @@
                     height : this.$.data('height') || 200,
                     displayInput : this.$.data('displayinput') == null || this.$.data('displayinput'),
                     displayPrevious : this.$.data('displayprevious'),
-                    displayUnselectable : this.$.data('displayUnselectable'),
+                    displayUnselectable : this.$.data('displayunselectable'),
                     fgColor : this.$.data('fgcolor') || '#87CEEB',
                     midColor : this.$.data('midcolor') || '#FFFFFF',
-                    midTexture : document.getElementById(this.$.data('midTexture')),
+                    hColor : this.$.data('hcolor') || '#87CEEB',
+                    midTexture : document.getElementById(this.$.data('midtexture')),
                     showHandle : this.$.data('showHandle'),
-                    handleColor : this.$.data('handlecolor') || '#87CEEB',
+                    lockText: this.$.data('locktext'),
                     inline : false,
 
                     // Hooks
@@ -340,7 +341,7 @@
                          }
                     );
                 // disables text field editing
-                this.$.attr('readonly', 'readonly');
+                if (this.o.lockText) this.$.attr('readonly', 'readonly');
                 this.listen();
             } else {
                 this.$.attr('readonly', 'readonly');
@@ -625,7 +626,7 @@
             var l = 0;
             
             while (l < h) {
-                var m = parseInt((l + h) / 2)
+                var m = parseInt((l + h) / 2, 10);
                 var element = s[m];
                 if (element > v) {
                     h = m - 1;
@@ -746,7 +747,7 @@
                 
                 // Handle
                 c.beginPath();
-                    c.fillStyle = this.o.handleColor;
+                    c.fillStyle = this.o.hColor;
                     c.arc( this.xy + (this.radius + 10) * Math.cos(this.startAngle + a), this.xy + (this.radius + 10) * Math.sin(this.startAngle + a), 5, 0, 2 * Math.PI, false);
                 c.closePath();
                 c.fill();
