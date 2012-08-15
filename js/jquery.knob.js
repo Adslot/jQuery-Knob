@@ -84,6 +84,13 @@
                     // Config
                     min : this.$.data('min') || 0,
                     max : this.$.data('max') || 100,
+                    selectableSet : this.$.data('selectableSet'),
+                    selectableMin : (typeof this.$.data('selectableSet') !== 'undefined' ) ?
+                        this.$.data('selectableSet')[0] :
+                        (this.$.data('selectableMin') || (this.$.data('min') || 0)),
+                    selectableMax : (typeof this.$.data('selectableSet') !== 'undefined' ) ?
+                        this.$.data('selectableSet')[this.$.data('selectableSet').length - 1] :
+                        (this.$.data('selectableMax') || (this.$.data('max') || 100)),
                     stopper : true,
                     readOnly : this.$.data('readonly'),
 
@@ -96,7 +103,12 @@
                     height : this.$.data('height') || 200,
                     displayInput : this.$.data('displayinput') == null || this.$.data('displayinput'),
                     displayPrevious : this.$.data('displayprevious'),
+                    displayUnselectable : this.$.data('displayunselectable'),
                     fgColor : this.$.data('fgcolor') || '#87CEEB',
+                    midColor : this.$.data('midcolor') || '#FFFFFF',
+                    midTexture : document.getElementById(this.$.data('midTexture')),
+                    showHandle : this.$.data('showHandle'),
+                    handleColor : this.$.data('handlecolor') || '#87CEEB',
                     inline : false,
 
                     // Hooks
@@ -410,7 +422,9 @@
 
         this.val = function (v) {
             if (null != v) {
-                this.cv = this.o.stopper ? max(min(v, this.o.max), this.o.min) : v;
+                // this.cv = this.o.stopper ? max(min(v, this.o.max), this.o.min) : v;
+                v = this.rachet(this.cv, parseInt(v) - this.cv);
+                this.cv = this.o.stopper ? max(min(v, this.o.selectableMax), this.o.selectableMin) : v;
                 this.v = this.cv;
                 this.$.val(this.v);
                 this._draw();
@@ -493,6 +507,7 @@
                                 s.o.stopper
                                 && (v = max(min(v, s.o.max), s.o.min));
 
+                                if (s.o.selectableSet) { v = s.rachet(parseInt(s.$.val()), kv[kc] * m) };
                                 s.change(v);
                                 s._draw();
 
@@ -584,9 +599,67 @@
                         });
         };
 
+        this.limit = function (v) {
+            if (this.o.selectableSet) {
+                v = this.nearest(v, this.o.selectableSet);
+            }
+            if (!((this.o.selectableMin <=  v) && (this.o.selectableMax >= v))) {
+                if (this.o.selectableMin > v) {
+                    v = this.o.selectableMin;
+                } 
+                if (this.o.selectableMax < v) {
+                    v = this.o.selectableMax;
+                }
+            }
+            return v;
+        }
+        
+        this.nearest = function(v, s) {
+            // Binary search and comparison of neighbouring values
+            if (typeof(s) === 'undefined' || !s.length) return -1;
+            if (this.o.selectableSet.indexOf(v) > 0) return v;
+            
+            var h = s.length - 1;
+            var l = 0;
+            
+            while (l < h) {
+                var m = parseInt((l + h) / 2)
+                var element = s[m];
+                if (element > v) {
+                    h = m - 1;
+                } else if (element < v) {
+                    l = m + 1;
+                } else {
+                    return s[m];
+                }
+            }
+            
+            var ld = v - s[l - 1];
+            var hd = s[h] - v;
+            
+            return (ld <= hd) ? s[l - 1] : s[h];
+        };
+
+        this.rachet = function (v, delta) {
+            if (typeof(this.o.selectableSet) === 'undefined') return v;
+            if (v > this.o.selectableMax) return this.o.selectableMax;
+            if (v < this.o.selectableMin) return this.o.selectableMin;
+            if (delta === 0) return v;
+            
+            v = this.nearest(v, this.o.selectableSet);
+            
+            if (this.o.selectableSet.indexOf(v) + delta > this.o.selectableSet.length - 1) {
+                return this.o.selectableSet[ this.o.selectableSet.length - 1 ];
+            } else if (this.o.selectableSet.indexOf(v) + delta < 0 ) {
+                return this.o.selectableSet[ 0 ];
+            }
+            
+            return this.o.selectableSet[ this.o.selectableSet.indexOf(v) + delta ];
+        }
+
         this.change = function (v) {
-            this.cv = v;
-            this.$.val(v);
+            this.cv = this.limit(v);
+            this.$.val(this.limit(v));
         };
 
         this.angle = function (v) {
@@ -596,22 +669,51 @@
         this.draw = function () {
 
             var c = this.g,                 // context
-                a = this.angle(this.cv)    // Angle
+                a = this.angle(this.cv)     // Angle
                 , sat = this.startAngle     // Start angle
                 , eat = sat + a             // End angle
                 , sa, ea                    // Previous angles
-                , r = 1;
+                , r = 1
+                , rad = this.radius;
 
             c.lineWidth = this.lineWidth;
+            
+            if (this.o.showHandle) {
+                rad = this.radius - this.lineWidth / 2;
+            }
 
             this.o.cursor
                 && (sat = eat - this.cursorExt)
                 && (eat = eat + this.cursorExt);
 
+            ea = this.endAngle;
+            if (this.o.displayUnselectable) { ea = this.startAngle + this.angle(this.o.selectableMax); }
+            
             c.beginPath();
                 c.strokeStyle = this.o.bgColor;
-                c.arc(this.xy, this.xy, this.radius, this.endAngle, this.startAngle, true);
+                c.arc(this.xy, this.xy, rad, ea, this.startAngle, true);
             c.stroke();
+            
+            if (this.o.displayUnselectable) {
+                ea = this.endAngle;
+                sa = this.startAngle + this.angle(this.o.selectableMax);
+                
+                c.beginPath();
+                    if (this.o.midTexture) {
+                        /*
+                        if (typeof(this.o.midTexture) === 'string') {
+                            var path = this.o.midTexture;
+                            this.o.midTexture = new Image();
+                            this.o.midTexture.src = path;
+                        }
+                        */
+                        c.strokeStyle = c.createPattern(this.o.midTexture, "repeat");
+                    } else {
+                        c.strokeStyle = this.o.midColor;
+                    }
+                    c.arc(this.xy, this.xy, rad, sa, ea, false);
+                c.stroke();
+            }
 
             if (this.o.displayPrevious) {
                 ea = this.startAngle + this.angle(this.v);
@@ -622,15 +724,31 @@
 
                 c.beginPath();
                     c.strokeStyle = this.pColor;
-                    c.arc(this.xy, this.xy, this.radius, sa, ea, false);
+                    c.arc(this.xy, this.xy, rad, sa, ea, false);
                 c.stroke();
                 r = (this.cv == this.v);
             }
 
             c.beginPath();
                 c.strokeStyle = r ? this.o.fgColor : this.fgColor ;
-                c.arc(this.xy, this.xy, this.radius, sat, eat, false);
+                c.arc(this.xy, this.xy, rad, sat, eat, false);
             c.stroke();
+            
+            if (this.o.showHandle) {
+                // Outer line
+                c.lineWidth = 2;
+                c.beginPath();
+                    c.strokeStyle = this.o.bgColor;
+                    c.arc( this.xy, this.xy, this.radius + this.lineWidth / 2 - 8, 0, 2 * Math.PI, false);
+                c.stroke();
+                
+                // Handle
+                c.beginPath();
+                    c.fillStyle = this.o.handleColor;
+                    c.arc( this.xy + (this.radius + 10) * Math.cos(this.startAngle + a), this.xy + (this.radius + 10) * Math.sin(this.startAngle + a), 5, 0, 2 * Math.PI, false);
+                c.closePath();
+                c.fill();
+            }
         };
 
         this.cancel = function () {

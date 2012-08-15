@@ -4,6 +4,7 @@ jQuery Knob
 - canvas based ; no png or jpg sprites.
 - touch, mouse and mousewheel, keyboard events implemented.
 - downward compatible ; overloads an input element.
+- support for min/max, selectable min/max, selectable set, handle, unselectable colour/texture
 
 Example
 -------
@@ -35,6 +36,9 @@ The following options are supported :
 Behaviors :
 * min : min value | default=0.
 * max : max value | default=100.
+* selectable-min : min selectable value | default min
+* selectable-max : max selectable value | default max
+* selectable-set : set of selectable values | default [min…max]
 * angleOffset : starting angle in degrees | default=0.
 * angleArc : arc size in degrees | default=360.
 * stopper : stop at min & max on keydown/mousewheel | default=true.
@@ -48,6 +52,8 @@ UI :
 * displayPrevious : default=false | true=displays the previous value with transparency.
 * fgColor : foreground color.
 * bgColor : background color.
+* midColor : unselectable color.
+* midTexture : unselectable texture.
 
 Hooks
 -------
