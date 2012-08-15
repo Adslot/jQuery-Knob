@@ -339,6 +339,8 @@
                             s._xy()._touch(e);
                          }
                     );
+                // disables text field editing
+                this.$.attr('readonly', 'readonly');
                 this.listen();
             } else {
                 this.$.attr('readonly', 'readonly');
