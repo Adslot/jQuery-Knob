@@ -103,7 +103,7 @@
                     height : this.$.data('height') || 200,
                     displayInput : this.$.data('displayinput') == null || this.$.data('displayinput'),
                     displayPrevious : this.$.data('displayprevious'),
-                    displayUnselectable : this.$.data('displayunselectable'),
+                    displayUnselectable : this.$.data('displayUnselectable'),
                     fgColor : this.$.data('fgcolor') || '#87CEEB',
                     midColor : this.$.data('midcolor') || '#FFFFFF',
                     midTexture : document.getElementById(this.$.data('midTexture')),

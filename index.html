@@ -2,6 +2,7 @@
 <html>
     <head>
         <title>jQuery Knob demo</title>
+        <img style="display:none" id="texture" src="texture.png" />
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.0/jquery.min.js"></script>
         <script src="js/jquery.knob.js"></script>
         <script>
@@ -138,6 +139,39 @@ data-displayPrevious=true
 data-min="-100"
             </pre>
             <input class="knob" data-width="200" data-min="-100" data-displayPrevious=true value="44">
+        </div>
+        <div style="clear:both"></div>
+        <div class="demo">
+            <p>&#215; Disable display input</p>
+            <pre>
+data-width="100"
+data-displayInput=false
+data-selectable-max="80"
+data-selectable-min="20"
+            </pre>
+            <input class="knob" data-width="100" data-selectable-max="80" data-selectable-min="20" data-displayInput=false value="35">
+        </div>
+        <div class="demo">
+            <p>&#215; 'cursor' mode</p>
+            <pre>
+data-width="150"
+data-cursor=true
+data-thickness=.3
+data-fgColor="#222222"
+data-selectable-set="[10,20,30,40,50,60,70,80,90,100]"
+            </pre>
+            <input class="knob" data-width="150" data-cursor=true data-fgColor="#222222" data-selectable-set="[10,20,30,40,50,60,70,80,90,100]" data-thickness=.3 value="40">
+        </div>
+        <div class="demo" >
+            <p>&#215; Display previous value</p>
+            <pre>
+data-displayPrevious=true
+data-selectable-set="[5,10,20,25,30,40,50,60,70,75]"
+data-show-handle=true
+data-display-unselectable=true
+data-mid-texture="texture"
+            </pre>
+            <input class="knob" data-width="200" data-selectable-set="[5,10,20,25,30,40,50,60,70,75]" data-show-handle=true data-display-unselectable=true data-mid-texture="texture" data-displayPrevious=true value="40">
         </div>
         <div style="clear:both"></div>
         <div class="demo">
