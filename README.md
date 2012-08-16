@@ -43,6 +43,7 @@ Behaviors :
 * angleArc : arc size in degrees | default=360.
 * stopper : stop at min & max on keydown/mousewheel | default=true.
 * readOnly : disable input and events | default=false.
+* lockText : disable numeric keyboard input events | default=false
 
 UI :
 * cursor : display mode "cursor" | default=gauge.
@@ -52,8 +53,10 @@ UI :
 * displayPrevious : default=false | true=displays the previous value with transparency.
 * fgColor : foreground color.
 * bgColor : background color.
-* midColor : unselectable color.
-* midTexture : unselectable texture.
+* mColor : unselectable color.
+* mTexture : unselectable texture.
+* showHadnle : display second outer circle with handle
+* hColor : handle color. | default=bgColor
 
 Hooks
 -------

@@ -105,9 +105,9 @@
                     displayPrevious : this.$.data('displayprevious'),
                     displayUnselectable : this.$.data('displayunselectable'),
                     fgColor : this.$.data('fgcolor') || '#87CEEB',
-                    midColor : this.$.data('midcolor') || '#FFFFFF',
+                    mColor : this.$.data('mcolor') || '#FFFFFF',
                     hColor : this.$.data('hcolor') || '#87CEEB',
-                    midTexture : document.getElementById(this.$.data('midtexture')),
+                    mTexture : document.getElementById(this.$.data('mtexture')),
                     showHandle : this.$.data('showHandle'),
                     lockText: this.$.data('locktext'),
                     inline : false,
@@ -702,17 +702,18 @@
                 sa = this.startAngle + this.angle(this.o.selectableMax);
                 
                 c.beginPath();
-                    if (this.o.midTexture) {
+                    if (this.o.mTexture) {
+                        // TODO: Load texture in then render. Need render onLoad?
                         /*
-                        if (typeof(this.o.midTexture) === 'string') {
-                            var path = this.o.midTexture;
-                            this.o.midTexture = new Image();
-                            this.o.midTexture.src = path;
+                        if (typeof(this.o.mTexture) === 'string') {
+                            var path = this.o.mTexture;
+                            this.o.mTexture = new Image();
+                            this.o.mTexture.src = path;
                         }
                         */
-                        c.strokeStyle = c.createPattern(this.o.midTexture, "repeat");
+                        c.strokeStyle = c.createPattern(this.o.mTexture, "repeat");
                     } else {
-                        c.strokeStyle = this.o.midColor;
+                        c.strokeStyle = this.o.mColor;
                     }
                     c.arc(this.xy, this.xy, rad, sa, ea, false);
                 c.stroke();
