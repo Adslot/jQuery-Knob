@@ -31,6 +31,19 @@
     k.c.t = function (e) {
         return e.originalEvent.touches.length - 1;
     };
+    
+    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+      if (w < 2 * r) r = w / 2;
+      if (h < 2 * r) r = h / 2;
+      this.beginPath();
+      this.moveTo(x+r, y);
+      this.arcTo(x+w, y,   x+w, y+h, r);
+      this.arcTo(x+w, y+h, x,   y+h, r);
+      this.arcTo(x,   y+h, x,   y,   r);
+      this.arcTo(x,   y,   x+w, y,   r);
+      this.closePath();
+      return this;
+    }
 
     /**
      * Kontrol Object
@@ -105,10 +118,16 @@
                     displayPrevious : this.$.data('displayprevious'),
                     displayUnselectable : this.$.data('displayunselectable'),
                     displaySegmented : this.$.data('displaysegmented'),
+                    segmentSkip : this.$.data('segmentskip') || null,
                     fgColor : this.$.data('fgcolor') || '#87CEEB',
                     mColor : this.$.data('mcolor') || '#FFFFFF',
-                    hColor : this.$.data('hcolor') || '#87CEEB',
+                    hColor : this.$.data('hcolor'),
+                    hbColor : this.$.data('hbcolor'),
+                    hRadius : this.$.data('hradius') || 1.5,
+                    bColor : this.$.data('bcolor'),
+                    bRadius : this.$.data('bradius') || 0,
                     mTexture : document.getElementById(this.$.data('mtexture')),
+                    bgTexture : document.getElementById(this.$.data('bgtexture')),
                     showHandle : this.$.data('showHandle'),
                     lockText: this.$.data('locktext'),
                     inline : false,
@@ -405,20 +424,24 @@
     k.Dial = function () {
         k.o.call(this);
 
-        this.startAngle = null;
+        //this.startAngle = null;
+        this.startCoord = null;
         this.xy = null;
-        this.radius = null;
+        //this.radius = null;
+        this.len = null;
         this.lineWidth = null;
         this.cursorExt = null;
         this.w2 = null;
-        this.PI2 = 2*Math.PI;
+        //this.PI2 = 2*Math.PI;
 
         this.extend = function () {
             this.o = $.extend(
                 {
                     bgColor : this.$.data('bgcolor') || '#EEEEEE',
-                    angleOffset : this.$.data('angleoffset') || 0,
-                    angleArc : this.$.data('anglearc') || 360,
+                    //angleOffset : this.$.data('angleoffset') || 0,
+                    coordOffset : this.$.data('coordoffset') || 0,
+                    //angleArc : this.$.data('anglearc') || 360,
+                    coordLen : this.$.data('coordlen') || 100,
                     inline : true
                 }, this.o
             );
@@ -440,20 +463,9 @@
         this.xy2val = function (x, y) {
             var a, ret;
 
-            a = Math.atan2(
-                        x - (this.x + this.w2)
-                        , - (y - this.y - this.w2)
-                    ) - this.angleOffset;
+            a = x - this.x;
 
-            if(this.angleArc != this.PI2 && (a < 0) && (a > -0.5)) {
-                // if isset angleArc option, set to min if .5 under min
-                a = 0;
-            } else if (a < 0) {
-                a += this.PI2;
-            }
-
-            ret = ~~ (0.5 + (a * (this.o.max - this.o.min) / this.angleArc))
-                    + this.o.min;
+            ret = parseInt(a * (this.o.max - this.o.min) / (this.endCoord - this.startCoord) + this.o.min, 10);
 
             this.o.stopper
             && (ret = max(min(ret, this.o.max), this.o.min));
@@ -559,22 +571,27 @@
             this.cursorExt = this.o.cursor / 100;
             this.xy = this.w2;
             this.lineWidth = this.xy * this.o.thickness;
-            this.radius = this.xy - this.lineWidth / 2;
+            //this.radius = this.xy - this.lineWidth / 2;
 
-            this.o.angleOffset
-            && (this.o.angleOffset = isNaN(this.o.angleOffset) ? 0 : this.o.angleOffset);
+            //this.o.angleOffset
+            //&& (this.o.angleOffset = isNaN(this.o.angleOffset) ? 0 : this.o.angleOffset);
 
-            this.o.angleArc
-            && (this.o.angleArc = isNaN(this.o.angleArc) ? this.PI2 : this.o.angleArc);
+            //this.o.angleArc
+            //&& (this.o.angleArc = isNaN(this.o.angleArc) ? this.PI2 : this.o.angleArc);
 
             // deg to rad
-            this.angleOffset = this.o.angleOffset * Math.PI / 180;
-            this.angleArc = this.o.angleArc * Math.PI / 180;
+            //this.angleOffset = this.o.angleOffset * Math.PI / 180;
+            //this.angleArc = this.o.angleArc * Math.PI / 180;
+            
+            this.coordOffset = this.o.coordOffset;
 
             // compute start and end angles
-            this.startAngle = 1.5 * Math.PI + this.angleOffset;
-            this.endAngle = 1.5 * Math.PI + this.angleOffset + this.angleArc;
-
+            //this.startAngle = 1.5 * Math.PI + this.angleOffset;
+            this.startCoord = this.coordOffset + ((this.o.showHandle) ? (this.o.hRadius * this.lineWidth / 2 + 4) : 0);
+            //this.endAngle = 1.5 * Math.PI + this.angleOffset + this.angleArc;
+            this.endCoord = this.o.width - this.coordOffset - ((this.o.showHandle) ? (this.o.hRadius * this.lineWidth / 2 + 4) : 0);
+            this.coordLen = this.endCoord - this.startCoord;
+            
             var s = max(
                             String(Math.abs(this.o.max)).length
                             , String(Math.abs(this.o.min)).length
@@ -669,119 +686,122 @@
         this.angle = function (v) {
             return (v - this.o.min) * this.angleArc / (this.o.max - this.o.min);
         };
+        
+        this.coord = function (v) {
+            return (v - this.o.min) * (this.endCoord - this.startCoord) / (this.o.max - this.o.min);
+        };
 
         this.draw = function () {
 
-            var c = this.g,                 // context
-                a = this.angle(this.cv)     // Angle
-                , sat = this.startAngle     // Start angle
-                , eat = sat + a             // End angle
-                , sa, ea                    // Previous angles
-                , r = 1
-                , rad = this.radius;
+            var c = this.g                  // context
+                , co = this.coord(this.cv)  // Coord
+                , sac = this.startCoord     // Start coord
+                , eac = sac + co
+                , sa, ea                    // Previous coords
+                , r = 1;
 
             c.lineWidth = this.lineWidth;
             
-            if (this.o.showHandle) {
-                rad = this.radius - this.lineWidth / 2;
-            }
-
             this.o.cursor
-                && (sat = eat - this.cursorExt)
-                && (eat = eat + this.cursorExt);
-
-            ea = this.endAngle;
-            if (this.o.displayUnselectable) { ea = this.startAngle + this.angle(this.o.selectableMax); }
+                && (sac = eac - (this.cursorExt * this.o.coordLen))
+                && (eac = eac + (this.cursorExt * this.o.coordLen));
             
             c.beginPath();
-                c.strokeStyle = this.o.bgColor;
-                c.arc(this.xy, this.xy, rad, ea, this.startAngle, true);
+                if (this.o.bgTexture) {
+                    c.strokeStyle = c.createPattern(this.o.bgTexture, "repeat");
+                } else {
+                    c.strokeStyle = this.o.bgColor;
+                }
+                c.moveTo(this.startCoord, 3 * c.lineWidth / 2);
+                c.lineTo(this.endCoord, 3 * c.lineWidth / 2);
             c.stroke();
             
             if (this.o.displayUnselectable) {
-                ea = this.endAngle;
-                sa = this.startAngle + this.angle(this.o.selectableMax);
+                ea = this.endCoord;
+                sa = this.startCoord + this.coord(this.o.selectableMax);
                 
                 c.beginPath();
                     if (this.o.mTexture) {
-                        // TODO: Load texture in then render. Need render onLoad?
-                        /*
-                        if (typeof(this.o.mTexture) === 'string') {
-                            var path = this.o.mTexture;
-                            this.o.mTexture = new Image();
-                            this.o.mTexture.src = path;
-                        }
-                        */
                         c.strokeStyle = c.createPattern(this.o.mTexture, "repeat");
                     } else {
                         c.strokeStyle = this.o.mColor;
                     }
-                    c.arc(this.xy, this.xy, rad, sa, ea, false);
+                    c.moveTo(sa, 3 * c.lineWidth / 2);
+                    c.lineTo(ea, 3 * c.lineWidth / 2);
                 c.stroke();
             }
 
             if (this.o.displayPrevious) {
-                ea = this.startAngle + this.angle(this.v);
-                sa = this.startAngle;
+                ea = this.startCoord + this.coord(this.v);
+                sa = this.startCoord;
                 this.o.cursor
                     && (sa = ea - this.cursorExt)
                     && (ea = ea + this.cursorExt);
 
                 c.beginPath();
                     c.strokeStyle = this.pColor;
-                    c.arc(this.xy, this.xy, rad, sa, ea, false);
+                    c.moveTo(sa, 3 / 2 * c.lineWidth);
+                    c.lineTo(ea, 3 / 2 * c.lineWidth);
                 c.stroke();
                 r = (this.cv == this.v);
             }
 
             c.beginPath();
                 c.strokeStyle = r ? this.o.fgColor : this.fgColor ;
-                c.arc(this.xy, this.xy, rad, sat, eat, false);
+                c.moveTo(sac, 3 / 2 * c.lineWidth);
+                c.lineTo(eac, 3 / 2 * c.lineWidth);
             c.stroke();
             
             if (this.o.displaySegmented) {
                 var i = 0,
-                    d = this.o.selectableMax,
                     x = 0;
 
                 c.lineWidth = 2;
 
-                for (i = 0; i < this.o.selectableSet.length - 1; i++) {
-                    if (this.o.selectableSet[i + 1] - this.o.selectableSet[i] < d ) {
-                        d = this.o.selectableSet[i + 1] - this.o.selectableSet[i];
-                    };
+                if (typeof(this.o.segmentSkip) !== 'undefined') {
+                    if (typeof(this.o.selectableSet) !== 'undefined') {
+                        for (i = 0; i < (this.o.selectableSet.length - 1); i++) {
+                            if (this.o.selectableSet[i + 1] - this.o.selectableSet[i] < this.o.segmentSkip ) {
+                                this.o.segmentSkip = this.o.selectableSet[i + 1] - this.o.selectableSet[i];
+                            }
+                        }
+                    }
                 }
-
-                for (i = 0; i < this.o.selectableMax / d; i++) {
-                    x = this.o.selectableMin + (d * i);
+                
+            
+                for (i = 0; i < (this.o.selectableMax / this.o.segmentSkip) - 1; i++) {
+                    x = this.o.selectableMin + (this.o.segmentSkip * i);
                     c.beginPath();
-                        c.strokeStyle = '#FFF';
-                        c.moveTo(
-                            this.xy + (this.radius - this.lineWidth) * Math.cos(this.startAngle + this.angle(x)),
-                            this.xy + (this.radius - this.lineWidth) * Math.sin(this.startAngle + this.angle(x))
-                            );
-                        c.lineTo(
-                            this.xy + (this.radius + this.lineWidth / 2) * Math.cos(this.startAngle + this.angle(x)), 
-                            this.xy + (this.radius + this.lineWidth / 2) * Math.sin(this.startAngle + this.angle(x))
-                            );
+                        c.strokeStyle = this.o.bColor;
+                        c.moveTo(this.startCoord + this.coord(x), this.lineWidth + 1/4 * this.lineWidth);
+                        c.lineTo(this.startCoord + this.coord(x), 2 * this.lineWidth - 1/4 * this.lineWidth);
                     c.stroke();
                 }
             }
             
+            if (this.o.bColor) {
+                // Slider border
+                c.lineWidth = 1;
+                c.strokeStyle = this.o.bColor;
+                c.roundRect(this.startCoord, this.lineWidth, this.endCoord - this.startCoord, this.lineWidth, this.o.bRadius).stroke();
+                c.lineWidth = this.lineWidth;
+            }
+            
             if (this.o.showHandle) {
-                // Outer line
-                c.lineWidth = 2;
-                c.beginPath();
-                    c.strokeStyle = this.o.bgColor;
-                    c.arc( this.xy, this.xy, this.radius + this.lineWidth / 2 - 8, 0, 2 * Math.PI, false);
-                c.stroke();
-                
                 // Handle
                 c.beginPath();
                     c.fillStyle = this.o.hColor;
-                    c.arc( this.xy + (this.radius + 10) * Math.cos(this.startAngle + a), this.xy + (this.radius + 10) * Math.sin(this.startAngle + a), 5, 0, 2 * Math.PI, false);
+                    c.arc( eac, 3 / 2 * this.lineWidth, this.o.hRadius * this.lineWidth / 2, 0, 2 * Math.PI, false);
                 c.closePath();
                 c.fill();
+                
+                // Border
+                c.lineWidth = 1;
+                c.beginPath();
+                    c.strokeStyle = this.o.hbColor;
+                    c.arc( eac, 3 / 2 * this.lineWidth, this.o.hRadius * this.lineWidth / 2, 0, 2 * Math.PI, false);
+                c.stroke();
+                c.lineWidth = this.lineWidth;
             }
         };
 
