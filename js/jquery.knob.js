@@ -32,19 +32,26 @@
         return e.originalEvent.touches.length - 1;
     };
     
-    CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
-      if (w < 2 * r) r = w / 2;
-      if (h < 2 * r) r = h / 2;
-      this.beginPath();
-      this.moveTo(x+r, y);
-      this.arcTo(x+w, y,   x+w, y+h, r);
-      this.arcTo(x+w, y+h, x,   y+h, r);
-      this.arcTo(x,   y+h, x,   y,   r);
-      this.arcTo(x,   y,   x+w, y,   r);
-      this.closePath();
-      return this;
-    }
-
+    
+    Object.getPrototypeOf(document.createElement('canvas').getContext('2d')).strokeRoundRect =
+    function(x,y,w,h,r) {
+        if (typeof r === "undefined") {
+            r = 5;
+        }
+        this.beginPath();
+        this.moveTo(x + r, y);
+        this.lineTo(x + w - r, y);
+        this.quadraticCurveTo(x + w, y, x + w, y + r);
+        this.lineTo(x + w, y + h - r);
+        this.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        this.lineTo(x + r, y + h);
+        this.quadraticCurveTo(x, y + h, x, y + h - r);
+        this.lineTo(x, y + r);
+        this.quadraticCurveTo(x, y, x + r, y);
+        this.closePath();
+        this.stroke();
+    };
+    
     /**
      * Kontrol Object
      *
@@ -783,7 +790,7 @@
                 // Slider border
                 c.lineWidth = 1;
                 c.strokeStyle = this.o.bColor;
-                c.roundRect(this.startCoord, this.lineWidth, this.endCoord - this.startCoord, this.lineWidth, this.o.bRadius).stroke();
+                c.strokeRoundRect(this.startCoord, this.lineWidth, this.endCoord - this.startCoord, this.lineWidth, this.o.bRadius);
                 c.lineWidth = this.lineWidth;
             }
             
