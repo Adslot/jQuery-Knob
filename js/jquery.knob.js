@@ -104,6 +104,7 @@
                     displayInput : this.$.data('displayinput') == null || this.$.data('displayinput'),
                     displayPrevious : this.$.data('displayprevious'),
                     displayUnselectable : this.$.data('displayunselectable'),
+                    displaySegmented : this.$.data('displaysegmented'),
                     fgColor : this.$.data('fgcolor') || '#87CEEB',
                     mColor : this.$.data('mcolor') || '#FFFFFF',
                     hColor : this.$.data('hcolor') || '#87CEEB',
@@ -737,6 +738,35 @@
                 c.strokeStyle = r ? this.o.fgColor : this.fgColor ;
                 c.arc(this.xy, this.xy, rad, sat, eat, false);
             c.stroke();
+            
+            if (this.o.displaySegmented) {
+                var i = 0,
+                    d = this.o.selectableMax,
+                    x = 0;
+
+                c.lineWidth = 2;
+
+                for (i = 0; i < this.o.selectableSet.length - 1; i++) {
+                    if (this.o.selectableSet[i + 1] - this.o.selectableSet[i] < d ) {
+                        d = this.o.selectableSet[i + 1] - this.o.selectableSet[i];
+                    };
+                }
+
+                for (i = 0; i < this.o.selectableMax / d; i++) {
+                    x = this.o.selectableMin + (d * i);
+                    c.beginPath();
+                        c.strokeStyle = '#FFF';
+                        c.moveTo(
+                            this.xy + (this.radius - this.lineWidth) * Math.cos(this.startAngle + this.angle(x)),
+                            this.xy + (this.radius - this.lineWidth) * Math.sin(this.startAngle + this.angle(x))
+                            );
+                        c.lineTo(
+                            this.xy + (this.radius + this.lineWidth / 2) * Math.cos(this.startAngle + this.angle(x)), 
+                            this.xy + (this.radius + this.lineWidth / 2) * Math.sin(this.startAngle + this.angle(x))
+                            );
+                    c.stroke();
+                }
+            }
             
             if (this.o.showHandle) {
                 // Outer line
