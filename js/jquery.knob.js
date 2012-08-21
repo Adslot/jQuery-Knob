@@ -130,7 +130,8 @@
                     mColor : this.$.data('mcolor') || '#FFFFFF',
                     hColor : this.$.data('hcolor'),
                     hbColor : this.$.data('hbcolor'),
-                    hRadius : this.$.data('hradius') || 1.5,
+                    hoColor : this.$.data('hocolor') || '#FFFFFF',
+                    hRadius : this.$.data('hradius') || 1.4,
                     bColor : this.$.data('bcolor'),
                     bRadius : this.$.data('bradius') || 0,
                     mTexture : document.getElementById(this.$.data('mtexture')),
@@ -776,13 +777,15 @@
                 }
                 
             
-                for (i = 0; i < (this.o.selectableMax / this.o.segmentSkip) - 1; i++) {
+                for (i = 0; i < ((this.o.selectableMax - this.o.selectableMin) / this.o.segmentSkip); i++) {
                     x = this.o.selectableMin + (this.o.segmentSkip * i);
-                    c.beginPath();
-                        c.strokeStyle = this.o.bColor;
-                        c.moveTo(this.startCoord + this.coord(x), this.lineWidth + 1/4 * this.lineWidth);
-                        c.lineTo(this.startCoord + this.coord(x), 2 * this.lineWidth - 1/4 * this.lineWidth);
-                    c.stroke();
+                    if (this.coord(x) < this.coord(this.cv)) {
+                        c.beginPath();
+                            c.strokeStyle = this.o.bColor;
+                            c.moveTo(this.startCoord + this.coord(x), this.lineWidth + 1/4 * this.lineWidth);
+                            c.lineTo(this.startCoord + this.coord(x), 2 * this.lineWidth - 1/4 * this.lineWidth);
+                        c.stroke();
+                    }
                 }
             }
             
@@ -797,7 +800,7 @@
             if (this.o.showHandle) {
                 // Handle
                 c.beginPath();
-                    c.fillStyle = this.o.hColor;
+                    c.fillStyle = this.o.hoColor;
                     c.arc( eac, 3 / 2 * this.lineWidth, this.o.hRadius * this.lineWidth / 2, 0, 2 * Math.PI, false);
                 c.closePath();
                 c.fill();
@@ -805,8 +808,23 @@
                 // Border
                 c.lineWidth = 1;
                 c.beginPath();
-                    c.strokeStyle = this.o.hbColor;
+                    c.strokeStyle = this.o.bColor;
                     c.arc( eac, 3 / 2 * this.lineWidth, this.o.hRadius * this.lineWidth / 2, 0, 2 * Math.PI, false);
+                c.stroke();
+                c.lineWidth = this.lineWidth;
+                
+                // Handle inner
+                c.beginPath();
+                    c.fillStyle = this.o.hColor;
+                    c.arc( eac, 3 / 2 * this.lineWidth, this.lineWidth / 2, 0, 2 * Math.PI, false);
+                c.closePath();
+                c.fill();
+                
+                // Border inner
+                c.lineWidth = 1;
+                c.beginPath();
+                    c.strokeStyle = this.o.hbColor;
+                    c.arc( eac, 3 / 2 * this.lineWidth, this.lineWidth / 2, 0, 2 * Math.PI, false);
                 c.stroke();
                 c.lineWidth = this.lineWidth;
             }
