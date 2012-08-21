@@ -1,15 +1,17 @@
-/*!jQuery Knob*/
+/*!jQuery Slider*/
 /**
- * Downward compatible, touchable dial
+ * Downward compatible, touchable slider
  *
- * Version: 1.2.0 (15/07/2012)
+ * Version: 1.0.0 (20/08/2012)
  * Requires: jQuery v1.7+
  *
- * Copyright (c) 2012 Anthony Terrien
+ * Copyright (c) 2012 Adslot
+ * 
  * Under MIT and GPL licenses:
  *  http://www.opensource.org/licenses/mit-license.php
  *  http://www.gnu.org/licenses/gpl.html
  *
+ * Based on Anthony Terrien's jQuery Knob
  * Thanks to vor, eskimoblood, spiffistan, FabrizioC
  */
 (function($) {
@@ -835,7 +837,7 @@
         };
     };
 
-    $.fn.dial = $.fn.knob = function (o) {
+    $.fn.dial = $.fn.slider = function (o) {
         return this.each(
             function () {
                 var d = new k.Dial();
