@@ -109,6 +109,7 @@
                     fgColor : this.$.data('fgcolor') || '#87CEEB',
                     mColor : this.$.data('mcolor') || '#FFFFFF',
                     hColor : this.$.data('hcolor') || '#87CEEB',
+                    tColor : this.$.data('tcolor') || '#87CEEB',
                     mTexture : document.getElementById(this.$.data('mtexture')),
                     showHandle : this.$.data('showHandle'),
                     lockText: this.$.data('locktext'),
@@ -594,7 +595,7 @@
                         ,'background' : 'none'
                         ,'font' : 'bold ' + ((this.o.width / s) >> 0) + 'px Arial'
                         ,'text-align' : 'center'
-                        ,'color' : this.o.fgColor
+                        ,'color' : this.o.tColor
                         ,'padding' : '0px'
                         ,'-webkit-appearance': 'none'
                         })
