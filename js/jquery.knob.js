@@ -110,6 +110,7 @@
                     mColor : this.$.data('mcolor') || '#FFFFFF',
                     hColor : this.$.data('hcolor') || '#87CEEB',
                     tColor : this.$.data('tcolor') || '#87CEEB',
+                    sColor : this.$.data('scolor') || '#FFFFFF',
                     mTexture : document.getElementById(this.$.data('mtexture')),
                     showHandle : this.$.data('showHandle'),
                     lockText: this.$.data('locktext'),
@@ -757,7 +758,7 @@
                 for (i = 0; i < this.o.selectableMax / d; i++) {
                     x = this.o.selectableMin + (d * i);
                     c.beginPath();
-                        c.strokeStyle = '#FFF';
+                        c.strokeStyle = this.o.sColor;
                         c.moveTo(
                             this.xy + (this.radius - this.lineWidth) * Math.cos(this.startAngle + this.angle(x)),
                             this.xy + (this.radius - this.lineWidth) * Math.sin(this.startAngle + this.angle(x))
