@@ -93,7 +93,7 @@
             (this.$.data('selectableMin') || (this.$.data('min') || 0)),
           selectableMax: (typeof this.$.data('selectableSet') !== 'undefined' && this.$.data('selectableSet').length > 0) ?
             this.$.data('selectableSet')[this.$.data('selectableSet').length - 1] :
-            (this.$.data('selectableMax') || (this.$.data('max') || 0)),
+            (this.$.data('selectableMax') || (this.$.data('max') || 100)),
           stopper: true,
           readOnly: this.$.data('readonly'),
 
@@ -554,6 +554,13 @@
 
       if (this.v < this.o.min
         || this.v > this.o.max) this.v = this.o.min;
+        
+      if (typeof(this.o.selectableSet) == 'undefined') {
+        this.o.selectableSet = [];
+        for (var i = this.o.selectableMin; i <= this.o.selectableMax; i++) {
+            this.o.selectableSet.push(i);
+        }
+      }
 
       this.$.val(this.v);
       this.w2 = this.o.width / 2;
@@ -634,29 +641,6 @@
         indx = indx + this.o.selectableMin;
 
       return indx;
-      // Binary search and comparison of neighbouring values
-      /*if (typeof (s) === 'undefined' || !s.length) return -1;
-      if (this.o.selectableSet.indexOf(v) > 0) return v;
-
-      var h = s.length - 1;
-      var l = 0;
-
-      while (l < h) {
-      var m = parseInt((l + h) / 2, 10);
-      var element = s[m];
-      if (element > v) {
-      h = m - 1;
-      } else if (element < v) {
-      l = m + 1;
-      } else {
-      return s[m];
-      }
-      }
-
-      var ld = v - s[l - 1];
-      var hd = s[h] - v;
-
-      return (ld <= hd) ? s[l - 1] : s[h];*/
     };
 
     this.rachet = function (v, delta) {
@@ -774,14 +758,25 @@
           x = this.o.selectableMin + (d * i);
           c.beginPath();
           c.strokeStyle = this.o.sColor;
-          c.moveTo(
-            this.xy + (this.radius - this.lineWidth) * Math.cos(this.startAngle + this.angle(x)),
-            this.xy + (this.radius - this.lineWidth) * Math.sin(this.startAngle + this.angle(x))
-          );
-          c.lineTo(
-            this.xy + (this.radius + this.lineWidth / 2) * Math.cos(this.startAngle + this.angle(x)),
-            this.xy + (this.radius + this.lineWidth / 2) * Math.sin(this.startAngle + this.angle(x))
-          );
+          if (this.o.showHandle) {
+            c.moveTo(
+              this.xy + (this.radius - this.lineWidth ) * Math.cos(this.startAngle + this.angle(x)),
+              this.xy + (this.radius - this.lineWidth ) * Math.sin(this.startAngle + this.angle(x))
+            );
+            c.lineTo(
+              this.xy + (this.radius) * Math.cos(this.startAngle + this.angle(x)),
+              this.xy + (this.radius) * Math.sin(this.startAngle + this.angle(x))
+            );
+          } else {
+            c.moveTo(
+              this.xy + (this.radius - this.lineWidth / 2) * Math.cos(this.startAngle + this.angle(x)),
+              this.xy + (this.radius - this.lineWidth / 2) * Math.sin(this.startAngle + this.angle(x))
+            );
+            c.lineTo(
+              this.xy + (this.radius + this.lineWidth / 2) * Math.cos(this.startAngle + this.angle(x)),
+              this.xy + (this.radius + this.lineWidth / 2) * Math.sin(this.startAngle + this.angle(x))
+            );
+          }
           c.stroke();
         }
       }
