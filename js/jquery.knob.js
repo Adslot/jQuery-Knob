@@ -268,7 +268,14 @@
 
         if (s.cH
           && (s.cH(v) === false)) return;
-
+        
+        for (var i = 0; i <= s.o.selectableSet.length - 1; i++) {
+            if (v > s.o.selectableSet[i] && v <= s.o.selectableSet[i + 1]) {
+              v = s.o.selectableSet[i + 1];
+              i = s.o.selectableSet.length;
+            }
+        }
+        
         s.change(v);
         s._draw();
       };
